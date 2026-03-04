@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+       <link rel="stylesheet" href="design.css">
+    <style>
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .sidebar { width: 250px; min-height: calc(100vh - 56px - 50px); background-color: #343a40; }
+        .sidebar a { color: #adb5bd; text-decoration: none; display: block; padding: 12px 20px; }
+        .sidebar a:hover { background-color: #495057; color: white; }
+        .sidebar a.active { background-color: #0d6efd; color: white; }
+        .main-content { flex: 1; background-color: #f8f9fa; }
+        footer { background-color: #343a40; color: #adb5bd; height: 50px; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-dark bg-dark px-3">
+        <a class="navbar-brand" href="#">DASHBOARD</a>
+        <div class="d-flex align-items-center">
+            <span class="text-white me-3" id="welcomeUser">Welcome!</span>
+            <button onclick="logout()" class="btn btn-outline-light btn-sm">Logout</button>
+        </div>
+    </nav>
+
+    <!-- BODY -->
+    <div class="d-flex flex-grow-1">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <a href="#">🏠 Home</a>
+            <a href="#"class="active" >👤 Profile</a>
+            <a href="#">⚙️ Settings</a>
+            <a href="#">📊 Reports</a>
+            <a href="#">📁 Files</a>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content p-4 w-100">
+            <h4>Dashboard</h4>
+            <p class="text-muted">Welcome to your dashboard!</p>
+
+            <div class="row mt-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card text-white bg-primary shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Users</h5>
+                            <p class="card-text fs-3">24</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card text-white bg-success shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Active</h5>
+                            <p class="card-text fs-3">18</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card text-white bg-danger shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Inactive</h5>
+                            <p class="card-text fs-3">6</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="d-flex justify-content-center align-items-center">
+        <p class="mb-0">© Reyes Carlos Andrei R. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    </script>
+
+</body>
+</html>
