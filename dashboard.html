@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-       <link rel="stylesheet" href="design.css">
+    <link rel="stylesheet" href="design.css">
     <style>
         body { display: flex; flex-direction: column; min-height: 100vh; }
         .sidebar { width: 250px; min-height: calc(100vh - 56px - 50px); background-color: #343a40; }
@@ -31,19 +31,20 @@
     <div class="d-flex flex-grow-1">
 
         <!-- SIDEBAR -->
-        <div class="sidebar">
-            <a href="#">🏠 Home</a>
-            <a href="#"class="active" >👤 Profile</a>
-            <a href="#">⚙️ Settings</a>
-            <a href="#">📊 Reports</a>
-            <a href="#">📁 Files</a>
-        </div>
+       <div class="sidebar">
+    <a href="dashboard.html" class="active">🏠 Home</a>
+    <a href="#">👤 Profile</a>
+    <a href="#">⚙️ Settings</a>
+    <a href="#">📊 Reports</a>
+    <a href="#">📁 Files</a>
+</div>
 
         <!-- MAIN CONTENT -->
         <div class="main-content p-4 w-100">
             <h4>Dashboard</h4>
             <p class="text-muted">Welcome to your dashboard!</p>
 
+            <!-- CARDS -->
             <div class="row mt-4">
                 <div class="col-md-4 mb-3">
                     <div class="card text-white bg-primary shadow">
@@ -70,6 +71,59 @@
                     </div>
                 </div>
             </div>
+
+            <!-- USER MANAGEMENT TABLE -->
+            <div class="mt-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>User Management</h5>
+                    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add User</button>
+                </div>
+                <table class="table table-bordered table-hover bg-white">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ADD/EDIT MODAL -->
+            <div class="modal fade" id="userModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalTitle">Add User</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="userId">
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" id="modalUsername" class="form-control" placeholder="Enter username">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" id="modalEmail" class="form-control" placeholder="Enter email">
+                            </div>
+                            <div class="mb-3" id="passwordField">
+                                <label class="form-label">Password</label>
+                                <input type="password" id="modalPassword" class="form-control" placeholder="Enter password">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button class="btn btn-primary" onclick="saveUser()">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -78,8 +132,8 @@
         <p class="mb-0">© Reyes Carlos Andrei R. All rights reserved.</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Check if user is logged in
         const token = localStorage.getItem('token');
         if (!token) {
             window.location.href = 'login.html';
@@ -89,6 +143,87 @@
             localStorage.removeItem('token');
             window.location.href = 'login.html';
         }
+
+        const modal = new bootstrap.Modal(document.getElementById('userModal'));
+
+       async function loadUsers() {
+    const response = await fetch('http://localhost:3000/api/auth/users');
+    const users = await response.json();
+    const tbody = document.getElementById('userTableBody');
+    tbody.innerHTML = '';
+
+    // Update cards with real counts
+    document.querySelector('.bg-primary .fs-3').textContent = users.length;
+
+    users.forEach(user => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.email}</td>
+                <td>${user.created_at}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="openEditModal(${user.id}, '${user.username}', '${user.email}')">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Add User';
+            document.getElementById('userId').value = '';
+            document.getElementById('modalUsername').value = '';
+            document.getElementById('modalEmail').value = '';
+            document.getElementById('modalPassword').value = '';
+            document.getElementById('passwordField').style.display = 'block';
+            modal.show();
+        }
+
+        function openEditModal(id, username, email) {
+            document.getElementById('modalTitle').textContent = 'Edit User';
+            document.getElementById('userId').value = id;
+            document.getElementById('modalUsername').value = username;
+            document.getElementById('modalEmail').value = email;
+            document.getElementById('passwordField').style.display = 'none';
+            modal.show();
+        }
+
+        async function saveUser() {
+            const id = document.getElementById('userId').value;
+            const username = document.getElementById('modalUsername').value;
+            const email = document.getElementById('modalEmail').value;
+            const password = document.getElementById('modalPassword').value;
+
+            if (id) {
+                await fetch(`http://localhost:3000/api/auth/users/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email })
+                });
+            } else {
+                await fetch('http://localhost:3000/api/auth/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+            }
+
+            modal.hide();
+            loadUsers();
+        }
+
+        async function deleteUser(id) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                await fetch(`http://localhost:3000/api/auth/users/${id}`, {
+                    method: 'DELETE'
+                });
+                loadUsers();
+            }
+        }
+
+        loadUsers();
     </script>
 
 </body>
