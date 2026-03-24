@@ -226,10 +226,10 @@
             // Update cards with real counts
             document.querySelector('.bg-primary .fs-3').textContent = users.length;
 
-            users.forEach(user => {
+            users.forEach((user, index) => {
                 tbody.innerHTML += `
             <tr>
-                <td>${user.id}</td>
+                <td>${index + 1 }</td>
                 <td>${user.username}</td>
                 <td>${user.email}</td>
                 <td>${user.created_at}</td>
@@ -298,19 +298,19 @@
 
 
         function showSection(sectionName, clickedElement) {
-            // 1. Hide all sections
+          
             const sections = document.querySelectorAll('.page-section');
             sections.forEach(sec => sec.style.display = 'none');
 
-            // 2. Show the clicked section
+            //  Show 
             document.getElementById('section-' + sectionName).style.display = 'block';
 
-            // 3. Update sidebar active state
-            // Remove 'active' class from all sidebar links
+            //  active state
+          
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
             });
-            // Add 'active' class to the clicked link
+            // Add 'active' 
             clickedElement.classList.add('active');
 
 
