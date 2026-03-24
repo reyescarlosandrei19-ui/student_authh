@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,15 +8,48 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="design.css">
     <style>
-        body { display: flex; flex-direction: column; min-height: 100vh; }
-        .sidebar { width: 250px; min-height: calc(100vh - 56px - 50px); background-color: #343a40; }
-        .sidebar a { color: #adb5bd; text-decoration: none; display: block; padding: 12px 20px; }
-        .sidebar a:hover { background-color: #495057; color: white; }
-        .sidebar a.active { background-color: #0d6efd; color: white; }
-        .main-content { flex: 1; background-color: #f8f9fa; }
-        footer { background-color: #343a40; color: #adb5bd; height: 50px; }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            min-height: calc(100vh - 56px - 50px);
+            background-color: #343a40;
+        }
+
+        .sidebar a {
+            color: #adb5bd;
+            text-decoration: none;
+            display: block;
+            padding: 12px 20px;
+        }
+
+        .sidebar a:hover {
+            background-color: #495057;
+            color: white;
+        }
+
+        .sidebar a.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            background-color: #f8f9fa;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: #adb5bd;
+            height: 50px;
+        }
     </style>
 </head>
+
 <body>
 
     <!-- NAVBAR -->
@@ -31,66 +65,102 @@
     <div class="d-flex flex-grow-1">
 
         <!-- SIDEBAR -->
-       <div class="sidebar">
-    <a href="dashboard.html" class="active">🏠 Home</a>
-    <a href="#">👤 Profile</a>
-    <a href="#">⚙️ Settings</a>
-    <a href="#">📊 Reports</a>
-    <a href="#">📁 Files</a>
-</div>
+        <div class="sidebar">
+        
+            <a href="#" class="sidebar-link active" onclick="showSection('home', this)">🏠 Home</a>
+            <a href="#" class="sidebar-link" onclick="showSection('profile', this)">👤 Profile</a>
+            <a href="#" class="sidebar-link" onclick="showSection('settings', this)">⚙️ Settings</a>
+            <a href="#" class="sidebar-link" onclick="showSection('reports', this)">📊 Reports</a>
+            <a href="#" class="sidebar-link" onclick="showSection('files', this)">📁 Files</a>
+            <a href="#" class="sidebar-link" onclick="showSection('kumaglist', this)">🚪 Kumaglist</a>
+        </div>
 
-        <!-- MAIN CONTENT -->
+
+        <!-- MAIN CONTENT AREA -->
         <div class="main-content p-4 w-100">
-            <h4>Dashboard</h4>
-            <p class="text-muted">Welcome to your dashboard!</p>
 
-            <!-- CARDS -->
-            <div class="row mt-4">
-                <div class="col-md-4 mb-3">
-                    <div class="card text-white bg-primary shadow">
-                        <div class="card-body">
-                            <h5 class="card-title">Users</h5>
-                            <p class="card-text fs-3">24</p>
+            <!-- HOME SECTION (Visible by default) -->
+            <div id="section-home" class="page-section">
+                <h4>Dashboard</h4>
+                <p class="text-muted">Welcome to your dashboard!</p>
+
+                <!-- CARDS -->
+                <div class="row mt-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-white bg-primary shadow">
+                            <div class="card-body">
+                                <h5 class="card-title">Users</h5>
+                                <p class="card-text fs-3">24</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-white bg-success shadow">
+                            <div class="card-body">
+                                <h5 class="card-title">Active</h5>
+                                <p class="card-text fs-3">18</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-white bg-danger shadow">
+                            <div class="card-body">
+                                <h5 class="card-title">Inactive</h5>
+                                <p class="card-text fs-3">6</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card text-white bg-success shadow">
-                        <div class="card-body">
-                            <h5 class="card-title">Active</h5>
-                            <p class="card-text fs-3">18</p>
-                        </div>
+
+                <!-- USER MANAGEMENT TABLE -->
+                <div class="mt-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>User Management</h5>
+                        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add User</button>
                     </div>
+                    <table class="table table-bordered table-hover bg-white">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                        </tbody>
+                    </table>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card text-white bg-danger shadow">
-                        <div class="card-body">
-                            <h5 class="card-title">Inactive</h5>
-                            <p class="card-text fs-3">6</p>
-                        </div>
-                    </div>
-                </div>
+            </div> <!-- End Home Section -->
+
+            <!-- PROFILE SECTION (Hidden by default) -->
+            <div id="section-profile" class="page-section" style="display: none;">
+                <h4>User Profile</h4>
+                <p>This is where the user's personal details would go.</p>
             </div>
 
-            <!-- USER MANAGEMENT TABLE -->
-            <div class="mt-5">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5>User Management</h5>
-                    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add User</button>
-                </div>
-                <table class="table table-bordered table-hover bg-white">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                    </tbody>
-                </table>
+            <!-- SETTINGS SECTION (Hidden by default) -->
+            <div id="section-settings" class="page-section" style="display: none;">
+                <h4>Settings</h4>
+                <p>Change your theme, notification preferences, etc.</p>
+            </div>
+
+            <!-- REPORTS SECTION (Hidden by default) -->
+            <div id="section-reports" class="page-section" style="display: none;">
+                <h4>Reports</h4>
+                <p>Generate and view system reports here.</p>
+            </div>
+
+            <!-- FILES SECTION (Hidden by default) -->
+            <div id="section-files" class="page-section" style="display: none;">
+                <h4>Files</h4>
+                <p>Manage uploaded files and documents here.</p>
+            </div>
+            <!-- KUMAGLIST SECTION (Hidden by default) -->
+            <div id="section-kumaglist" class="page-section" style="display: none;">
+                <h4>Kumaglist</h4>
+                <p>Manage uploaded files and documents here.</p>
             </div>
 
             <!-- ADD/EDIT MODAL -->
@@ -113,7 +183,8 @@
                             </div>
                             <div class="mb-3" id="passwordField">
                                 <label class="form-label">Password</label>
-                                <input type="password" id="modalPassword" class="form-control" placeholder="Enter password">
+                                <input type="password" id="modalPassword" class="form-control"
+                                    placeholder="Enter password">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -146,17 +217,17 @@
 
         const modal = new bootstrap.Modal(document.getElementById('userModal'));
 
-       async function loadUsers() {
-    const response = await fetch('http://localhost:3000/api/auth/users');
-    const users = await response.json();
-    const tbody = document.getElementById('userTableBody');
-    tbody.innerHTML = '';
+        async function loadUsers() {
+            const response = await fetch('http://localhost:3000/api/auth/users');
+            const users = await response.json();
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
 
-    // Update cards with real counts
-    document.querySelector('.bg-primary .fs-3').textContent = users.length;
+            // Update cards with real counts
+            document.querySelector('.bg-primary .fs-3').textContent = users.length;
 
-    users.forEach(user => {
-        tbody.innerHTML += `
+            users.forEach(user => {
+                tbody.innerHTML += `
             <tr>
                 <td>${user.id}</td>
                 <td>${user.username}</td>
@@ -168,8 +239,8 @@
                 </td>
             </tr>
         `;
-    });
-}
+            });
+        }
 
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'Add User';
@@ -224,7 +295,31 @@
         }
 
         loadUsers();
+
+
+        function showSection(sectionName, clickedElement) {
+            // 1. Hide all sections
+            const sections = document.querySelectorAll('.page-section');
+            sections.forEach(sec => sec.style.display = 'none');
+
+            // 2. Show the clicked section
+            document.getElementById('section-' + sectionName).style.display = 'block';
+
+            // 3. Update sidebar active state
+            // Remove 'active' class from all sidebar links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            // Add 'active' class to the clicked link
+            clickedElement.classList.add('active');
+
+
+        }
+
+
+
     </script>
 
 </body>
+
 </html>
