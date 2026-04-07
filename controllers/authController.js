@@ -3,16 +3,37 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const nodemailer = require('nodemailer');
+const axios = require('axios'); // Required for CAPTCHA verification
 require('dotenv').config();
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const loginAttempts = {};
 
-// --- USER REGISTRATION ---
+// --- USER REGISTRATION (Merged with CAPTCHA) ---
 exports.register = async (req, res) => {
     const { username, email, password } = req.body;
+    const captchaToken = req.body['g-recaptcha-response'];
+
+    // 1. Check if CAPTCHA was attempted
+    if (!captchaToken) {
+        return res.status(400).json({ message: "Please complete the CAPTCHA." });
+    }
+
     try {
-        // Optimization: Check for existing email instead of fetching all passwords
+        // 2. Verify Token with Google
+        const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
+        const captchaVerify = await axios.post(verifyUrl, null, {
+            params: {
+                secret: process.env.RECAPTCHA_SECRET_KEY,
+                response: captchaToken
+            }
+        });
+
+        if (!captchaVerify.data.success) {
+            return res.status(400).json({ message: "CAPTCHA verification failed. Try again." });
+        }
+
+        // 3. Proceed with existing SQL Registration logic
         const checkSql = 'SELECT * FROM users WHERE email = ?';
         db.query(checkSql, [email], async (err, results) => {
             if (err) return res.status(500).json({ message: 'Server error' });
@@ -28,8 +49,10 @@ exports.register = async (req, res) => {
                 res.status(201).json({ message: 'User registered successfully' });
             });
         });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+
+    } catch (error) {
+        console.error("CAPTCHA Error:", error);
+        res.status(500).json({ message: "Internal Server Error during verification." });
     }
 };
 
@@ -37,7 +60,6 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
-    // Brute force protection check
     if (loginAttempts[email]) {
         const { attempts, lockUntil } = loginAttempts[email];
         if (lockUntil && Date.now() < lockUntil) {
@@ -64,7 +86,6 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: `Invalid password.` });
         }
 
-        // Reset attempts on successful login
         loginAttempts[email] = { attempts: 0, lockUntil: null };
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '1h' });
         res.json({ message: 'Login successful', token });
@@ -116,32 +137,25 @@ exports.deleteUser = (req, res) => {
 // --- GOOGLE OAUTH LOGIN ---
 exports.googleLogin = async (req, res) => {
     const { token } = req.body;
-
     try {
         const ticket = await client.verifyIdToken({
             idToken: token,
             audience: process.env.GOOGLE_CLIENT_ID
         });
-        
         const { email, name, picture } = ticket.getPayload();
 
-        // --- NEW LOGIC: Check if user exists, if not, save them ---
         const checkUserSql = 'SELECT * FROM users WHERE email = ?';
         db.query(checkUserSql, [email], async (err, results) => {
             if (err) console.error("Database error:", err);
-
             if (results.length === 0) {
-                // User is new! Add them to the database
                 const insertSql = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
-                // We use a dummy password 'google_user' because they login via Google
                 db.query(insertSql, [name, email, 'google_authenticated'], (err, result) => {
                     if (err) console.error("Error saving new Google user:", err);
-                    else console.log("New Google user saved to database!");
+                    else console.log("New Google user saved!");
                 });
             }
         });
 
-        // --- EMAIL LOGIC ---
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -157,7 +171,6 @@ exports.googleLogin = async (req, res) => {
             html: `<h2>Hello ${name},</h2><p>Successful login via Google.</p>`
         };
 
-        // If this line fails, it might be why you don't get an email
         await transporter.sendMail(mailOptions);
 
         const appToken = jwt.sign(
