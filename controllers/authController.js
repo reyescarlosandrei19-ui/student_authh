@@ -1,22 +1,24 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const loginAttempts = {};
 
+// --- USER REGISTRATION ---
 exports.register = async (req, res) => {
     const { username, email, password } = req.body;
     try {
-        const checkSql = 'SELECT password FROM users';
-        db.query(checkSql, async (err, results) => {
+        // Optimization: Check for existing email instead of fetching all passwords
+        const checkSql = 'SELECT * FROM users WHERE email = ?';
+        db.query(checkSql, [email], async (err, results) => {
             if (err) return res.status(500).json({ message: 'Server error' });
-
-            for (let user of results) {
-                const match = await bcrypt.compare(password, user.password);
-                if (match) {
-                    return res.status(400).json({ message: 'Password already in use by another account' });
-                }
+            
+            if (results.length > 0) {
+                return res.status(400).json({ message: 'Email already registered' });
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,17 +33,16 @@ exports.register = async (req, res) => {
     }
 };
 
+// --- STANDARD LOGIN ---
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
+    // Brute force protection check
     if (loginAttempts[email]) {
         const { attempts, lockUntil } = loginAttempts[email];
         if (lockUntil && Date.now() < lockUntil) {
             const secondsLeft = Math.ceil((lockUntil - Date.now()) / 1000);
             return res.status(429).json({ message: `Too many failed attempts. Try again in ${secondsLeft} seconds.` });
-        }
-        if (lockUntil && Date.now() >= lockUntil) {
-            loginAttempts[email] = { attempts: 0, lockUntil: null };
         }
     }
 
@@ -54,24 +55,23 @@ exports.login = async (req, res) => {
         const match = await bcrypt.compare(password, user.password);
 
         if (!match) {
-            if (!loginAttempts[email]) {
-                loginAttempts[email] = { attempts: 0, lockUntil: null };
-            }
+            if (!loginAttempts[email]) loginAttempts[email] = { attempts: 0, lockUntil: null };
             loginAttempts[email].attempts += 1;
             if (loginAttempts[email].attempts >= 3) {
                 loginAttempts[email].lockUntil = Date.now() + 30 * 1000;
                 return res.status(429).json({ message: 'Too many failed attempts. Try again in 30 seconds.' });
             }
-            const remaining = 3 - loginAttempts[email].attempts;
-            return res.status(401).json({ message: `Invalid password. ${remaining} attempt(s) remaining.` });
+            return res.status(401).json({ message: `Invalid password.` });
         }
 
+        // Reset attempts on successful login
         loginAttempts[email] = { attempts: 0, lockUntil: null };
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '1h' });
         res.json({ message: 'Login successful', token });
     });
 };
 
+// --- USER MANAGEMENT ---
 exports.getUsers = (req, res) => {
     const sql = 'SELECT id, username, email, created_at FROM users';
     db.query(sql, (err, results) => {
@@ -111,4 +111,69 @@ exports.deleteUser = (req, res) => {
         if (err) return res.status(500).json({ message: 'Error deleting user', error: err });
         res.json({ message: 'User deleted successfully' });
     });
+};
+
+// --- GOOGLE OAUTH LOGIN ---
+exports.googleLogin = async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+        
+        const { email, name, picture } = ticket.getPayload();
+
+        // --- NEW LOGIC: Check if user exists, if not, save them ---
+        const checkUserSql = 'SELECT * FROM users WHERE email = ?';
+        db.query(checkUserSql, [email], async (err, results) => {
+            if (err) console.error("Database error:", err);
+
+            if (results.length === 0) {
+                // User is new! Add them to the database
+                const insertSql = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+                // We use a dummy password 'google_user' because they login via Google
+                db.query(insertSql, [name, email, 'google_authenticated'], (err, result) => {
+                    if (err) console.error("Error saving new Google user:", err);
+                    else console.log("New Google user saved to database!");
+                });
+            }
+        });
+
+        // --- EMAIL LOGIC ---
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Login Security Alert',
+            html: `<h2>Hello ${name},</h2><p>Successful login via Google.</p>`
+        };
+
+        // If this line fails, it might be why you don't get an email
+        await transporter.sendMail(mailOptions);
+
+        const appToken = jwt.sign(
+            { email: email, name: name }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '1h' }
+        );
+
+        res.status(200).json({ 
+            message: 'Google login successful', 
+            token: appToken,
+            user: { name, email, picture }
+        });
+
+    } catch (error) {
+        console.error('Google Auth Error:', error);
+        res.status(400).json({ message: 'Invalid Google token' });
+    }
 };

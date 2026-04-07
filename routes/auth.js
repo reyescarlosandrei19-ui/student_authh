@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-// login and reegister
+
+// Existing routes
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 
@@ -11,4 +12,7 @@ router.post('/users', authController.addUser);
 router.put('/users/:id', authController.editUser);
 router.delete('/users/:id', authController.deleteUser);
 
-module.exports = router;
+// Move this ABOVE the module.exports
+router.post('/google', authController.googleLogin);
+
+module.exports = router; // This must always be the last line
