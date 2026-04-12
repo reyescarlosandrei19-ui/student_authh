@@ -14,25 +14,30 @@
             min-height: 100vh;
         }
 
+        /* ── Sidebar (desktop) ── */
         .sidebar {
-            width: 250px;
+            width: 220px;
             min-height: calc(100vh - 56px - 50px);
             background-color: #343a40;
+            flex-shrink: 0;
         }
 
-        .sidebar a {
+        .sidebar a,
+        .offcanvas .sidebar-link {
             color: #adb5bd;
             text-decoration: none;
             display: block;
             padding: 12px 20px;
         }
 
-        .sidebar a:hover {
+        .sidebar a:hover,
+        .offcanvas .sidebar-link:hover {
             background-color: #495057;
             color: white;
         }
 
-        .sidebar a.active {
+        .sidebar a.active,
+        .offcanvas .sidebar-link.active {
             background-color: #0d6efd;
             color: white;
         }
@@ -40,12 +45,31 @@
         .main-content {
             flex: 1;
             background-color: #f8f9fa;
+            min-width: 0; /* prevents overflow */
         }
 
         footer {
             background-color: #343a40;
             color: #adb5bd;
             height: 50px;
+        }
+
+        /* ── Offcanvas sidebar (mobile) ── */
+        .offcanvas {
+            background-color: #343a40;
+            width: 220px !important;
+        }
+
+        .offcanvas-header {
+            border-bottom: 1px solid #495057;
+        }
+
+        .offcanvas-title {
+            color: white;
+        }
+
+        .offcanvas .btn-close {
+            filter: invert(1);
         }
     </style>
 </head>
@@ -54,19 +78,41 @@
 
     <!-- NAVBAR -->
     <nav class="navbar navbar-dark bg-dark px-3">
-        <a class="navbar-brand" href="#">DASHBOARD</a>
-        <div class="d-flex align-items-center">
-            <span class="text-white me-3" id="welcomeUser">Welcome!</span>
+        <!-- Hamburger: only visible on mobile -->
+        <button class="navbar-toggler d-md-none me-2" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <a class="navbar-brand">DASHBOARD</a>
+
+        <div class="d-flex align-items-center ms-auto">
+            <span class="text-white me-2 d-none d-sm-inline" id="welcomeUser">Welcome!</span>
             <button onclick="logout()" class="btn btn-outline-light btn-sm">Logout</button>
         </div>
     </nav>
 
+    <!-- MOBILE OFFCANVAS SIDEBAR -->
+    <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <a href="#" class="sidebar-link active" onclick="showSection('home', this)">🏠 Home</a>
+            <a href="#" class="sidebar-link" onclick="showSection('profile', this)">👤 Profile</a>
+            <a href="#" class="sidebar-link" onclick="showSection('settings', this)">⚙️ Settings</a>
+            <a href="#" class="sidebar-link" onclick="showSection('reports', this)">📊 Reports</a>
+            <a href="#" class="sidebar-link" onclick="showSection('files', this)">📁 Files</a>
+            <a href="#" class="sidebar-link" onclick="showSection('kumaglist', this)">🚪 Kumaglist</a>
+        </div>
+    </div>
+
     <!-- BODY -->
     <div class="d-flex flex-grow-1">
 
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-        
+        <!-- DESKTOP SIDEBAR (hidden on mobile) -->
+        <div class="sidebar d-none d-md-block">
             <a href="#" class="sidebar-link active" onclick="showSection('home', this)">🏠 Home</a>
             <a href="#" class="sidebar-link" onclick="showSection('profile', this)">👤 Profile</a>
             <a href="#" class="sidebar-link" onclick="showSection('settings', this)">⚙️ Settings</a>
@@ -75,38 +121,37 @@
             <a href="#" class="sidebar-link" onclick="showSection('kumaglist', this)">🚪 Kumaglist</a>
         </div>
 
-
         <!-- MAIN CONTENT AREA -->
-        <div class="main-content p-4 w-100">
+        <div class="main-content p-3 p-md-4 w-100">
 
-            <!-- HOME SECTION (Visible by default) -->
+            <!-- HOME SECTION -->
             <div id="section-home" class="page-section">
                 <h4>Dashboard</h4>
                 <p class="text-muted">Welcome to your dashboard!</p>
 
                 <!-- CARDS -->
-                <div class="row mt-4">
-                    <div class="col-md-4 mb-3">
-                        <div class="card text-white bg-primary shadow">
+                <div class="row mt-4 g-3">
+                    <div class="col-6 col-md-4">
+                        <div class="card text-white bg-primary shadow h-100">
                             <div class="card-body">
                                 <h5 class="card-title">Users</h5>
-                                <p class="card-text fs-3">24</p>
+                                <p class="card-text fs-3 mb-0" id="totalUsers">0</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card text-white bg-success shadow">
+                    <div class="col-6 col-md-4">
+                        <div class="card text-white bg-success shadow h-100">
                             <div class="card-body">
                                 <h5 class="card-title">Active</h5>
-                                <p class="card-text fs-3">18</p>
+                                <p class="card-text fs-3 mb-0">18</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card text-white bg-danger shadow">
+                    <div class="col-6 col-md-4">
+                        <div class="card text-white bg-danger shadow h-100">
                             <div class="card-body">
                                 <h5 class="card-title">Inactive</h5>
-                                <p class="card-text fs-3">6</p>
+                                <p class="card-text fs-3 mb-0">6</p>
                             </div>
                         </div>
                     </div>
@@ -115,57 +160,61 @@
                 <!-- USER MANAGEMENT TABLE -->
                 <div class="mt-5">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5>User Management</h5>
+                        <h5 class="mb-0">User Management</h5>
                         <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add User</button>
                     </div>
-                    <table class="table table-bordered table-hover bg-white">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Created At</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userTableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div> <!-- End Home Section -->
 
-            <!-- PROFILE SECTION (Hidden by default) -->
-            <div id="section-profile" class="page-section" style="display: none;">
+                    <!-- table-responsive makes it scroll horizontally on small screens -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover bg-white">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE SECTION -->
+            <div id="section-profile" class="page-section" style="display:none;">
                 <h4>User Profile</h4>
                 <p>This is where the user's personal details would go.</p>
             </div>
 
-            <!-- SETTINGS SECTION (Hidden by default) -->
-            <div id="section-settings" class="page-section" style="display: none;">
+            <!-- SETTINGS SECTION -->
+            <div id="section-settings" class="page-section" style="display:none;">
                 <h4>Settings</h4>
                 <p>Change your theme, notification preferences, etc.</p>
             </div>
 
-            <!-- REPORTS SECTION (Hidden by default) -->
-            <div id="section-reports" class="page-section" style="display: none;">
+            <!-- REPORTS SECTION -->
+            <div id="section-reports" class="page-section" style="display:none;">
                 <h4>Reports</h4>
                 <p>Generate and view system reports here.</p>
             </div>
 
-            <!-- FILES SECTION (Hidden by default) -->
-            <div id="section-files" class="page-section" style="display: none;">
+            <!-- FILES SECTION -->
+            <div id="section-files" class="page-section" style="display:none;">
                 <h4>Files</h4>
                 <p>Manage uploaded files and documents here.</p>
             </div>
-            <!-- KUMAGLIST SECTION (Hidden by default) -->
-            <div id="section-kumaglist" class="page-section" style="display: none;">
+
+            <!-- KUMAGLIST SECTION -->
+            <div id="section-kumaglist" class="page-section" style="display:none;">
                 <h4>Kumaglist</h4>
                 <p>Manage uploaded files and documents here.</p>
             </div>
 
             <!-- ADD/EDIT MODAL -->
             <div class="modal fade" id="userModal" tabindex="-1">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="modalTitle">Add User</h5>
@@ -183,8 +232,7 @@
                             </div>
                             <div class="mb-3" id="passwordField">
                                 <label class="form-label">Password</label>
-                                <input type="password" id="modalPassword" class="form-control"
-                                    placeholder="Enter password">
+                                <input type="password" id="modalPassword" class="form-control" placeholder="Enter password">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -200,15 +248,13 @@
 
     <!-- FOOTER -->
     <footer class="d-flex justify-content-center align-items-center">
-        <p class="mb-0">© Reyes Carlos Andrei R. All rights reserved.</p>
+        <p class="mb-0 small">© Reyes Carlos Andrei R. All rights reserved.</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'login.html';
-        }
+        if (!token) window.location.href = 'login.html';
 
         function logout() {
             localStorage.removeItem('token');
@@ -223,22 +269,20 @@
             const tbody = document.getElementById('userTableBody');
             tbody.innerHTML = '';
 
-            // Update cards with real counts
-            document.querySelector('.bg-primary .fs-3').textContent = users.length;
+            document.getElementById('totalUsers').textContent = users.length;
 
             users.forEach((user, index) => {
                 tbody.innerHTML += `
-            <tr>
-                <td>${index + 1 }</td>
-                <td>${user.username}</td>
-                <td>${user.email}</td>
-                <td>${user.created_at}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" onclick="openEditModal(${user.id}, '${user.username}', '${user.email}')">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
-                </td>
-            </tr>
-        `;
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${user.created_at}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="openEditModal(${user.id}, '${user.username}', '${user.email}')">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
+                        </td>
+                    </tr>`;
             });
         }
 
@@ -287,39 +331,32 @@
 
         async function deleteUser(id) {
             if (confirm('Are you sure you want to delete this user?')) {
-                await fetch(`http://localhost:3000/api/auth/users/${id}`, {
-                    method: 'DELETE'
-                });
+                await fetch(`http://localhost:3000/api/auth/users/${id}`, { method: 'DELETE' });
                 loadUsers();
             }
         }
 
         loadUsers();
 
-
         function showSection(sectionName, clickedElement) {
-          
-            const sections = document.querySelectorAll('.page-section');
-            sections.forEach(sec => sec.style.display = 'none');
-
-            //  Show 
+            document.querySelectorAll('.page-section').forEach(sec => sec.style.display = 'none');
             document.getElementById('section-' + sectionName).style.display = 'block';
 
-            //  active state
-          
+            // Update active on both sidebars
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+            
+            // Highlight matching links in both sidebars
             document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
+                if (link.getAttribute('onclick') === clickedElement.getAttribute('onclick')) {
+                    link.classList.add('active');
+                }
             });
-            // Add 'active' 
-            clickedElement.classList.add('active');
 
-
+            // Close offcanvas on mobile after clicking
+            const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('mobileSidebar'));
+            if (offcanvas) offcanvas.hide();
         }
-
-
-
     </script>
 
 </body>
-
 </html>
