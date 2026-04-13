@@ -14,7 +14,6 @@
             min-height: 100vh;
         }
 
-        /* ── Sidebar (desktop) ── */
         .sidebar {
             width: 220px;
             min-height: calc(100vh - 56px - 50px);
@@ -38,14 +37,14 @@
 
         .sidebar a.active,
         .offcanvas .sidebar-link.active {
-            background-color: #0d6efd;
+            background-color: #1e7e4e; /* Matched to your login green */
             color: white;
         }
 
         .main-content {
             flex: 1;
             background-color: #f8f9fa;
-            min-width: 0; /* prevents overflow */
+            min-width: 0;
         }
 
         footer {
@@ -54,31 +53,20 @@
             height: 50px;
         }
 
-        /* ── Offcanvas sidebar (mobile) ── */
         .offcanvas {
             background-color: #343a40;
             width: 220px !important;
         }
 
-        .offcanvas-header {
-            border-bottom: 1px solid #495057;
-        }
-
-        .offcanvas-title {
-            color: white;
-        }
-
-        .offcanvas .btn-close {
-            filter: invert(1);
+        .btn-bulk-delete {
+            display: none;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- NAVBAR -->
     <nav class="navbar navbar-dark bg-dark px-3">
-        <!-- Hamburger: only visible on mobile -->
         <button class="navbar-toggler d-md-none me-2" type="button" data-bs-toggle="offcanvas"
             data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
             <span class="navbar-toggler-icon"></span>
@@ -92,7 +80,6 @@
         </div>
     </nav>
 
-    <!-- MOBILE OFFCANVAS SIDEBAR -->
     <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title">Menu</h5>
@@ -108,10 +95,8 @@
         </div>
     </div>
 
-    <!-- BODY -->
     <div class="d-flex flex-grow-1">
 
-        <!-- DESKTOP SIDEBAR (hidden on mobile) -->
         <div class="sidebar d-none d-md-block">
             <a href="#" class="sidebar-link active" onclick="showSection('home', this)">🏠 Home</a>
             <a href="#" class="sidebar-link" onclick="showSection('profile', this)">👤 Profile</a>
@@ -121,54 +106,53 @@
             <a href="#" class="sidebar-link" onclick="showSection('kumaglist', this)">🚪 Kumaglist</a>
         </div>
 
-        <!-- MAIN CONTENT AREA -->
         <div class="main-content p-3 p-md-4 w-100">
 
-            <!-- HOME SECTION -->
             <div id="section-home" class="page-section">
-                <h4>Dashboard</h4>
-                <p class="text-muted">Welcome to your dashboard!</p>
+                <h4>Dashboard Overview</h4>
+                <p class="text-muted">Manage your system users and data.</p>
 
-                <!-- CARDS -->
                 <div class="row mt-4 g-3">
                     <div class="col-6 col-md-4">
                         <div class="card text-white bg-primary shadow h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Users</h5>
-                                <p class="card-text fs-3 mb-0" id="totalUsers">0</p>
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Total Users</h5>
+                                <p class="card-text fs-2 mb-0" id="totalUsers">0</p>
                             </div>
                         </div>
                     </div>
                     <div class="col-6 col-md-4">
                         <div class="card text-white bg-success shadow h-100">
-                            <div class="card-body">
+                            <div class="card-body text-center">
                                 <h5 class="card-title">Active</h5>
-                                <p class="card-text fs-3 mb-0">18</p>
+                                <p class="card-text fs-2 mb-0">18</p>
                             </div>
                         </div>
                     </div>
                     <div class="col-6 col-md-4">
                         <div class="card text-white bg-danger shadow h-100">
-                            <div class="card-body">
+                            <div class="card-body text-center">
                                 <h5 class="card-title">Inactive</h5>
-                                <p class="card-text fs-3 mb-0">6</p>
+                                <p class="card-text fs-2 mb-0">6</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- USER MANAGEMENT TABLE -->
                 <div class="mt-5">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">User Management</h5>
-                        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add User</button>
+                        <div>
+                            <button id="bulkDeleteBtn" class="btn btn-danger btn-sm me-2 btn-bulk-delete" onclick="deleteSelectedUsers()">🗑 Delete Selected</button>
+                            <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add User</button>
+                        </div>
                     </div>
 
-                    <!-- table-responsive makes it scroll horizontally on small screens -->
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover bg-white">
+                        <table class="table table-bordered table-hover bg-white shadow-sm">
                             <thead class="table-dark">
                                 <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
                                     <th>ID</th>
                                     <th>Username</th>
                                     <th>Email</th>
@@ -182,37 +166,12 @@
                 </div>
             </div>
 
-            <!-- PROFILE SECTION -->
-            <div id="section-profile" class="page-section" style="display:none;">
-                <h4>User Profile</h4>
-                <p>This is where the user's personal details would go.</p>
-            </div>
+            <div id="section-profile" class="page-section" style="display:none;"><h4>User Profile</h4></div>
+            <div id="section-settings" class="page-section" style="display:none;"><h4>Settings</h4></div>
+            <div id="section-reports" class="page-section" style="display:none;"><h4>Reports</h4></div>
+            <div id="section-files" class="page-section" style="display:none;"><h4>Files</h4></div>
+            <div id="section-kumaglist" class="page-section" style="display:none;"><h4>Kumaglist</h4></div>
 
-            <!-- SETTINGS SECTION -->
-            <div id="section-settings" class="page-section" style="display:none;">
-                <h4>Settings</h4>
-                <p>Change your theme, notification preferences, etc.</p>
-            </div>
-
-            <!-- REPORTS SECTION -->
-            <div id="section-reports" class="page-section" style="display:none;">
-                <h4>Reports</h4>
-                <p>Generate and view system reports here.</p>
-            </div>
-
-            <!-- FILES SECTION -->
-            <div id="section-files" class="page-section" style="display:none;">
-                <h4>Files</h4>
-                <p>Manage uploaded files and documents here.</p>
-            </div>
-
-            <!-- KUMAGLIST SECTION -->
-            <div id="section-kumaglist" class="page-section" style="display:none;">
-                <h4>Kumaglist</h4>
-                <p>Manage uploaded files and documents here.</p>
-            </div>
-
-            <!-- ADD/EDIT MODAL -->
             <div class="modal fade" id="userModal" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -224,15 +183,15 @@
                             <input type="hidden" id="userId">
                             <div class="mb-3">
                                 <label class="form-label">Username</label>
-                                <input type="text" id="modalUsername" class="form-control" placeholder="Enter username">
+                                <input type="text" id="modalUsername" class="form-control">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Email</label>
-                                <input type="email" id="modalEmail" class="form-control" placeholder="Enter email">
+                                <input type="email" id="modalEmail" class="form-control">
                             </div>
                             <div class="mb-3" id="passwordField">
                                 <label class="form-label">Password</label>
-                                <input type="password" id="modalPassword" class="form-control" placeholder="Enter password">
+                                <input type="password" id="modalPassword" class="form-control">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -246,7 +205,6 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
     <footer class="d-flex justify-content-center align-items-center">
         <p class="mb-0 small">© Reyes Carlos Andrei R. All rights reserved.</p>
     </footer>
@@ -264,28 +222,60 @@
         const modal = new bootstrap.Modal(document.getElementById('userModal'));
 
         async function loadUsers() {
-            const response = await fetch('http://localhost:3000/api/auth/users');
-            const users = await response.json();
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/users');
+                const users = await response.json();
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '';
+                document.getElementById('totalUsers').textContent = users.length;
 
-            document.getElementById('totalUsers').textContent = users.length;
+                users.forEach((user, index) => {
+                    // TIMESTAMP FORMATTING
+                    const formattedDate = user.created_at ? new Date(user.created_at).toLocaleString() : 'N/A';
 
-            users.forEach((user, index) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${user.username}</td>
-                        <td>${user.email}</td>
-                        <td>${user.created_at}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" onclick="openEditModal(${user.id}, '${user.username}', '${user.email}')">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
-                        </td>
-                    </tr>`;
-            });
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><input type="checkbox" class="user-checkbox" value="${user.id}" onchange="toggleBulkDeleteBtn()"></td>
+                            <td>${index + 1}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td class="small">${formattedDate}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" onclick="openEditModal(${user.id}, '${user.username}', '${user.email}')">Edit</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
+                            </td>
+                        </tr>`;
+                });
+                document.getElementById('bulkDeleteBtn').style.display = 'none';
+                document.getElementById('selectAll').checked = false;
+            } catch (err) {
+                console.error("Error loading users:", err);
+            }
         }
 
+        // BULK DELETE LOGIC
+        function toggleSelectAll() {
+            const isChecked = document.getElementById('selectAll').checked;
+            document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = isChecked);
+            toggleBulkDeleteBtn();
+        }
+
+        function toggleBulkDeleteBtn() {
+            const checkedCount = document.querySelectorAll('.user-checkbox:checked').length;
+            document.getElementById('bulkDeleteBtn').style.display = checkedCount > 0 ? 'inline-block' : 'none';
+        }
+
+        async function deleteSelectedUsers() {
+            const selectedIds = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+            if (confirm(`Delete ${selectedIds.length} users?`)) {
+                for (const id of selectedIds) {
+                    await fetch(`http://localhost:3000/api/auth/users/${id}`, { method: 'DELETE' });
+                }
+                loadUsers();
+            }
+        }
+
+        // USER CRUD LOGIC
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'Add User';
             document.getElementById('userId').value = '';
@@ -311,52 +301,34 @@
             const email = document.getElementById('modalEmail').value;
             const password = document.getElementById('modalPassword').value;
 
-            if (id) {
-                await fetch(`http://localhost:3000/api/auth/users/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email })
-                });
-            } else {
-                await fetch('http://localhost:3000/api/auth/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password })
-                });
-            }
+            const url = id ? `http://localhost:3000/api/auth/users/${id}` : 'http://localhost:3000/api/auth/users';
+            const method = id ? 'PUT' : 'POST';
+
+            await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
 
             modal.hide();
             loadUsers();
         }
 
         async function deleteUser(id) {
-            if (confirm('Are you sure you want to delete this user?')) {
+            if (confirm('Delete this user?')) {
                 await fetch(`http://localhost:3000/api/auth/users/${id}`, { method: 'DELETE' });
                 loadUsers();
             }
         }
 
-        loadUsers();
-
         function showSection(sectionName, clickedElement) {
             document.querySelectorAll('.page-section').forEach(sec => sec.style.display = 'none');
             document.getElementById('section-' + sectionName).style.display = 'block';
-
-            // Update active on both sidebars
             document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
-            
-            // Highlight matching links in both sidebars
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                if (link.getAttribute('onclick') === clickedElement.getAttribute('onclick')) {
-                    link.classList.add('active');
-                }
-            });
-
-            // Close offcanvas on mobile after clicking
-            const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('mobileSidebar'));
-            if (offcanvas) offcanvas.hide();
+            clickedElement.classList.add('active');
         }
-    </script>
 
+        loadUsers();
+    </script>
 </body>
 </html>

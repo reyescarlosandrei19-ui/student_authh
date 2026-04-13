@@ -6,13 +6,17 @@ const authController = require('../controllers/authController');
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 
-// User management routes
+// User management 
 router.get('/users', authController.getUsers);
 router.post('/users', authController.addUser);
 router.put('/users/:id', authController.editUser);
 router.delete('/users/:id', authController.deleteUser);
 
-// Move this ABOVE the module.exports
+
 router.post('/google', authController.googleLogin);
 
-module.exports = router; // This must always be the last line
+router.post('/forgot-password', authController.forgotPassword);
+
+router.post('/reset-password', authController.resetPassword);
+module.exports = router; 
+
