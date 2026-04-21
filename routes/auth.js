@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const { authorize } = require('../middleware/roleMiddleware');
 
 // Existing routes
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+
+router.get('/users', authorize(['admin']), authController.getUsers);
+router.delete('/users/:id', authorize(['admin']), authController.deleteUser);
 
 // User management 
 router.get('/users', authController.getUsers);
